@@ -1,0 +1,51 @@
+import json
+import numpy as np
+import pandas
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+
+df = pandas.read_csv('data\\project_fan.csv', sep=';', header=None)
+d = df.rename_axis('ID').values
+sd = np.asarray([])
+
+for i in range(d.shape[0]):
+    d[i][4] = np.asarray(json.loads(d[i][4]))
+    sd = np.append(sd, d[i][4])
+    # print(d[i][4].shape)
+
+#sd = sd[0:100]
+T = range(sd.shape[0])
+dtf= pandas.DataFrame(data=sd)
+dtf.loc[:, 1] = T
+
+dtf = dtf.rename(columns={0: "Sensor Data",
+                          1: "Number of SD"})
+dtf = dtf.reindex(columns=['Number of SD', 'Sensor Data'])
+
+plt.plot(T,sd)
+plt.xlabel("Number of SD")
+plt.ylabel("Sensor Data")
+plt.show()
+
+
+# Applying k-means to the dtf
+ kmeans=KMeans(n_clusters=5, init="k-means++", max_iter=300, n_init=10, random_state=0)
+ y_km=kmeans.fit_predict(dtf)
+# print(type(y_km), y_km.shape)
+
+# Visualising the clusters
+plt.scatter(np.where(y_km == 0)[0], sd[y_km ==0], s=10, c='red', label = "State 1")
+plt.scatter(np.where(y_km == 1)[0], sd[y_km ==1], s=10, c='black',label = "State 2")
+plt.scatter(np.where(y_km == 2)[0], sd[y_km ==2], s=10, c='blue',label = "State 3")
+plt.scatter(np.where(y_km == 3)[0], sd[y_km ==3], s=10, c='cyan',label = "State 4")
+plt.scatter(np.where(y_km == 4)[0], sd[y_km ==4], s=10, c='magenta',label = "State 5")
+
+plt.scatter(kmeans.cluster_centers_[:,0], kmeans.cluster_centers_[:,1], s=20,c="yellow",label="Centroids")
+plt.title("Cluster of States")
+plt.xlabel("Number of sensor data")
+plt.ylabel("Sensor data")
+plt.legend()
+
+plt.show()
+
+print('end')
